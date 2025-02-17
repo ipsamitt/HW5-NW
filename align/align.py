@@ -124,7 +124,7 @@ class NeedlemanWunsch:
 
         self._back = np.zeros((lenA + 1, lenB + 1), dtype=int)
         
-        #gapA matrix
+        #add top row and column to gapA matrix
         self._gapA_matrix[0][0] = self.gap_open
         for i in range(1, lenA + 1) :
             self._gapA_matrix[i][0] = self.gap_open + (i * self.gap_extend)
@@ -132,7 +132,7 @@ class NeedlemanWunsch:
             self._gapA_matrix[0][i] = -(float('inf'))
 
 
-        #gapB matrix
+        #add top row and column to gapB matrix
         self._gapB_matrix[0][0] = self.gap_open
         for i in range( lenB + 1):
             self._gapB_matrix[0][i] = self.gap_open + (i * self.gap_extend)
@@ -151,18 +151,21 @@ class NeedlemanWunsch:
         for i in range(1, lenA + 1):
             for j in range(1, lenB + 1):
 
-
+                #find potential values for align_matrix
                 score = self.sub_dict.get((seqA[i - 1], seqB[j - 1]), -1)
                 match = self._align_matrix[i - 1][j - 1] + score
                 gapA = self._gapA_matrix[i - 1][j - 1] + score
                 gapB = self._gapB_matrix[i - 1][j - 1] + score
 
-                
+                #calculate gapA and gapB matrix values at this index
+                #choose max between opening and keeping gap
                 self._gapA_matrix[i][j] = max((self._align_matrix[i - 1][j] + self.gap_extend + self.gap_open), self._gapA_matrix[i - 1][j] + self.gap_extend)
                 self._gapB_matrix[i][j] = max((self._align_matrix[i][j - 1] + self.gap_extend + self.gap_open), self._gapB_matrix[i][j - 1] + self.gap_extend)
 
+                #select max score move for align
                 self._align_matrix[i][j] = max(match, gapA, gapB)
 
+                #add alignment move in backtract matrix
                 if self._align_matrix[i][j] == match:
                     self._back[i][j] = 1
                 elif self._align_matrix[i][j] == gapA:
@@ -172,27 +175,27 @@ class NeedlemanWunsch:
 
                     #add gap in B
                     self._back[i][j] = 3
-        print(self._gapA_matrix)
-        print(self._gapB_matrix)
-        print(self._align_matrix)
-        print(self._back)
         return self._backtrace()
 
     def _backtrace(self) -> Tuple[float, str, str]:
         i, j = len(self._seqA), len(self._seqB)
         aligned_seqA, aligned_seqB = "", ""
 
+        #continue moving through matrix until you reach the edges
         while i > 0 or j > 0:
+            #if values are a match, add to chars to aligned sequences
             if i > 0 and j > 0 and self._back[i][j] == 1:
                 aligned_seqA = self._seqA[i - 1] + aligned_seqA
                 aligned_seqB = self._seqB[j - 1] + aligned_seqB
                 i -= 1
                 j -= 1
-            elif j > 0 and (i == 0 or self._back[i][j] == 3):  # Prefer gap in seqA first
+            #if back move is a gap, add gap to A and char to B
+            elif j > 0 and (i == 0 or self._back[i][j] == 3): 
                 aligned_seqA = "-" + aligned_seqA
                 aligned_seqB = self._seqB[j - 1] + aligned_seqB
                 j -= 1
-            elif i > 0 and (j == 0 or self._back[i][j] == 2):  # Gap in seqB
+            #if back move is a gap, add gap to B and char to A
+            elif i > 0 and (j == 0 or self._back[i][j] == 2):
                 aligned_seqA = self._seqA[i - 1] + aligned_seqA
                 aligned_seqB = "-" + aligned_seqB
                 i -= 1
@@ -242,10 +245,3 @@ def read_fasta(fasta_file: str) -> Tuple[str, str]:
             elif is_header and not first_header:
                 break
     return seq, header
-
-
-nw = NeedlemanWunsch("./substitution_matrices/BLOSUM62.mat", -10, -1)
-seq1, _ = read_fasta("./data/test_seq1.fa")
-seq2, _ = read_fasta("./data/test_seq2.fa")
-score, aligned_seq1, aligned_seq2 = nw.align(seq1, seq2)
-print(score, aligned_seq1, aligned_seq2)

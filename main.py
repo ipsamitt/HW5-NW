@@ -39,7 +39,7 @@ def main():
     scores.append(tt_score)
     alignments.append("Tursiops_truncatus")
 
-    rank_scores = (np.argsort(scores))
+    rank_scores = (np.argsort(scores))[::-1] 
 
     for i in rank_scores:
         print(alignments[i])
