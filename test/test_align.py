@@ -19,12 +19,16 @@ def test_nw_alignment():
     score, aligned_seq1, aligned_seq2 = nw.align(seq1, seq2)
     #ADD MATRIX ASSERT STATEMENTS
     #calculated by hand
-    true_gapA = [[-10, -float('inf'), -float('inf'), -float('inf')], [-11, -float('inf'), -float('inf'), -float('inf')], [-12, -6, -22, -24], [-13, -7, -7, -19], [-14, -8, -8, -6]]
-    assert((nw._gapA_matrix & true_gapA).all())
-    true_gapB = [[-10, -11, -12, -13, -14], [-float('inf'), -float('inf'), -6, -7], [-float('inf'), -float('inf'), -23, -7], [-float('inf'), -float('inf'), -23, -12], [-float('inf'), -float('inf'), -25, -17]]
-    assert((nw._gapB_matrix & true_gapB).all())
-    true_align = [[0, -float('inf'), -float('inf'),-float('inf')], [-float('inf'), 5, -11, -13], [-float('inf'), -12, 4, -8], [-float('inf'), -12, -1, 5], [-float('inf'), -14, -6, 4]]
-    assert((nw._align_matrix & true_align).all())
+    true_gapA = np.array([[-10, -float('inf'), -float('inf'), -float('inf')], 
+                          [-11, -float('inf'), -float('inf'), -float('inf')], 
+                          [-12, -6, -22, -24], 
+                          [-13, -7, -7, -19], 
+                          [-14, -8, -8, -6]])
+    assert np.allclose(nw._gapA_matrix, true_gapA, atol=1e-6)
+    true_gapB = np.array([[-10, -11, -12, -13, -14], [-float('inf'), -float('inf'), -6, -7], [-float('inf'), -float('inf'), -23, -7], [-float('inf'), -float('inf'), -23, -12], [-float('inf'), -float('inf'), -25, -17]])
+    assert np.allclose(nw._gapB_matrix, true_gapB, atol=1e-6)
+    true_align = np.array([[0, -float('inf'), -float('inf'),-float('inf')], [-float('inf'), 5, -11, -13], [-float('inf'), -12, 4, -8], [-float('inf'), -12, -1, 5], [-float('inf'), -14, -6, 4]])
+    assert np.allclose(nw._align_matrix, true_align, atol=1e-6)
 
 def test_nw_backtrace():
     
